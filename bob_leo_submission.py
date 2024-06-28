@@ -1,38 +1,52 @@
-import streamlit as st
-from your_custom_module import generate_advice  # Import your AI model logic
-import time
+from flask import Flask, request, jsonify
+import requests
 
-# Function to fetch real-time financial data (example implementation)
-def fetch_realtime_data():
-    # Replace with actual implementation to fetch real-time data
-    return {
-        'stock_price': 100.0,
-        'market_sentiment': 'Bullish'
-    }
+app = Flask(__name__)
 
-def main():
-    st.title('Financial Advisory App')
-    st.write('Welcome to our AI-driven Financial Advisory Service!')
+# API endpoints for NSE and BSE
+NSE_ENDPOINT = 'https://www.nseindia.com/api/equity-stockIndices?index=SECURITIES%20IN%20F%26O'
+BSE_ENDPOINT = 'https://www.bseindia.com/data/StockReach.aspx'
 
-    # User input for financial data (example inputs)
-    income = st.number_input('Enter your monthly income:')
-    expenses = st.number_input('Enter your monthly expenses:')
-    assets = st.number_input('Enter the value of your assets:')
-    liabilities = st.number_input('Enter the value of your liabilities:')
+# Function to fetch real-time stock data from NSE
+def fetch_nse_stock_data(stock_name):
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    response = requests.get(f'https://www.nseindia.com/api/quote-equity?symbol={stock_name}', headers=headers)
+    data = response.json()
+    return data
 
-    # Generate personalized advice based on inputs
-    if st.button('Get Financial Advice'):
-        advice = generate_advice(income, expenses, assets, liabilities)
-        st.subheader('Personalized Financial Advice:')
-        st.write(advice)
+# Function to fetch real-time stock data from BSE
+def fetch_bse_stock_data(stock_name):
+    response = requests.get(f'https://api.bseindia.com/BseIndiaAPI/api/StockReachGraph/w?flag=0&quotetype=EQ&scripcode={stock_name}')
+    data = response.json()
+    return data
 
-    # Real-time updates section
-    st.subheader('Real-Time Market Update:')
-    while True:
-        realtime_data = fetch_realtime_data()
-        st.write(f"Current Stock Price: ${realtime_data['stock_price']}")
-        st.write(f"Market Sentiment: {realtime_data['market_sentiment']}")
-        time.sleep(10)  # Sleep for 10 seconds before fetching new data
+# Function to generate investment advice
+def generate_advice(customer_details):
+    investment_amount = customer_details.get('investment_amount', 0)
+    stock_name = customer_details.get('stock_name')
+    stock_exchange = customer_details.get('stock_exchange')
+    
+    if stock_name:
+        if stock_exchange == 'NSE':
+            stock_data = fetch_nse_stock_data(stock_name)
+        elif stock_exchange == 'BSE':
+            stock_data = fetch_bse_stock_data(stock_name)
+        else:
+            return "Invalid stock exchange selected."
+        
+        # Perform analysis and generate predictions (simplified example)
+        advice = f"Based on current data from {stock_exchange}, it's advisable to consider {stock_name}."
+    else:
+        # Logic to suggest safe stocks based on investment_amount
+        advice = f"Considering your investment amount of ${investment_amount}, here are some safe stock suggestions."
+
+    return advice
+
+@app.route('/get_advice', methods=['POST'])
+def get_advice():
+    data = request.get_json()
+    advice = generate_advice(data)
+    return jsonify({'advice': advice})
 
 if __name__ == '__main__':
-    main()
+    app.run(debug=True)
