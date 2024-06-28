@@ -1,26 +1,38 @@
 import streamlit as st
-import pandas as pd
-import yfinance as yf
+from your_custom_module import generate_advice  # Import your AI model logic
+import time
 
-def fetch_stock_data(symbol, start_date, end_date):
-    data = yf.download(symbol, start=start_date, end=end_date)
-    return data
+# Function to fetch real-time financial data (example implementation)
+def fetch_realtime_data():
+    # Replace with actual implementation to fetch real-time data
+    return {
+        'stock_price': 100.0,
+        'market_sentiment': 'Bullish'
+    }
 
 def main():
-    st.title('Financial Data Viewer')
-    st.write('Enter a stock symbol and date range to view historical data.')
+    st.title('Financial Advisory App')
+    st.write('Welcome to our AI-driven Financial Advisory Service!')
 
-    symbol = st.text_input('Stock Symbol (e.g., AAPL)', 'AAPL')
-    start_date = st.date_input('Start Date', value=pd.to_datetime('2020-01-01'))
-    end_date = st.date_input('End Date', value=pd.to_datetime('2021-01-01'))
+    # User input for financial data (example inputs)
+    income = st.number_input('Enter your monthly income:')
+    expenses = st.number_input('Enter your monthly expenses:')
+    assets = st.number_input('Enter the value of your assets:')
+    liabilities = st.number_input('Enter the value of your liabilities:')
 
-    if st.button('Fetch Data'):
-        st.write(f'Fetching data for {symbol} from {start_date} to {end_date}...')
-        try:
-            data = fetch_stock_data(symbol, start_date, end_date)
-            st.write(data)
-        except Exception as e:
-            st.error(f"Error fetching data: {str(e)}")
+    # Generate personalized advice based on inputs
+    if st.button('Get Financial Advice'):
+        advice = generate_advice(income, expenses, assets, liabilities)
+        st.subheader('Personalized Financial Advice:')
+        st.write(advice)
+
+    # Real-time updates section
+    st.subheader('Real-Time Market Update:')
+    while True:
+        realtime_data = fetch_realtime_data()
+        st.write(f"Current Stock Price: ${realtime_data['stock_price']}")
+        st.write(f"Market Sentiment: {realtime_data['market_sentiment']}")
+        time.sleep(10)  # Sleep for 10 seconds before fetching new data
 
 if __name__ == '__main__':
     main()
