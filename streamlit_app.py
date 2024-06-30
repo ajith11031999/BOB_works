@@ -1,5 +1,3 @@
-# streamlit_app.py
-
 import streamlit as st
 from financial_advisor import generate_advisory, get_stock_data
 
