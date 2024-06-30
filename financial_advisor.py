@@ -1,5 +1,3 @@
-# financial_advisor.py
-
 import os
 import yfinance as yf
 from langchain.chat_models import ChatOpenAI
